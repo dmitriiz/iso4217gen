@@ -64,7 +64,7 @@ func main() {
 	})
 
 	// generate output file
-	f, err := os.Create("utils/iso4217_code.go")
+	f, err := os.Create("utils/iso4217_data.go")
 	if err != nil {
 		log.Fatalf("failed to create output file: %v", err)
 	}
