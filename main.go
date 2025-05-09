@@ -24,8 +24,49 @@ type Entry struct {
 	Alpha   string `xml:"Ccy"`
 }
 
+type Data struct {
+	N2C []Entry
+	C2N []Entry
+}
+
 //go:embed data.tmpl
 var tmpl string
+
+func buildN2C(entries []Entry) []Entry {
+	var result []Entry
+	seen := make(map[string]bool)
+	for _, e := range entries {
+		if seen[e.Numeric] {
+			continue
+		}
+		seen[e.Numeric] = true
+		result = append(result, e)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Numeric < result[j].Numeric
+	})
+
+	return result
+}
+
+func buildC2N(entries []Entry) []Entry {
+	var result []Entry
+	seen := make(map[string]bool)
+	for _, e := range entries {
+		if seen[e.Alpha] {
+			continue
+		}
+		seen[e.Alpha] = true
+		result = append(result, e)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Alpha < result[j].Alpha
+	})
+
+	return result
+}
 
 func main() {
 	// load XML data
@@ -46,22 +87,16 @@ func main() {
 		log.Fatalf("failed to unmarshal XML: %v", err)
 	}
 
-	// filter, deduplicate and sort data
+	// filter data
 	var entries []Entry
-	seen := make(map[string]bool)
 	for _, e := range doc.Table.Entries {
 		if e.Numeric != "" && e.Alpha != "" {
-			if seen[e.Numeric] {
-				continue
-			}
-			seen[e.Numeric] = true
 			entries = append(entries, e)
 		}
 	}
 
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Numeric < entries[j].Numeric
-	})
+	n2c := buildN2C(entries)
+	c2n := buildC2N(entries)
 
 	// generate output file
 	f, err := os.Create("utils/iso4217_data.go")
@@ -71,7 +106,7 @@ func main() {
 	defer f.Close()
 
 	t := template.Must(template.New("iso4217").Parse(tmpl))
-	if err := t.Execute(f, entries); err != nil {
+	if err := t.Execute(f, Data{N2C: n2c, C2N: c2n}); err != nil {
 		log.Fatalf("failed to execute template: %v", err)
 	}
 }
