@@ -99,7 +99,7 @@ func main() {
 	c2n := buildC2N(entries)
 
 	// generate output file
-	f, err := os.Create("utils/iso4217_data.go")
+	f, err := os.Create("iso4217/iso4217_data.go")
 	if err != nil {
 		log.Fatalf("failed to create output file: %v", err)
 	}
