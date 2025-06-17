@@ -1,4 +1,4 @@
-package utils
+package iso4217
 
 func Iso4217Numeric2Code(numeric string) (string, bool) {
 	code, ok := iso4217N2C[numeric]

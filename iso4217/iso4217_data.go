@@ -1,4 +1,4 @@
-package utils
+package iso4217
 
 var iso4217N2C = map[string]string{}
 
